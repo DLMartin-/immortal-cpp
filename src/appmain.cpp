@@ -1,7 +1,7 @@
 #include <SDL.h>
-#include <memory>
 #include <string_view>
-#include <tuple>
+#include <fmt/core.h>
+#include <fmt/color.h>
 
 struct SdlWindowContext {
   SDL_Window* window;
@@ -27,8 +27,13 @@ struct SdlWindowContext {
   auto [window, renderer] =
       create_window_context("The Immortal", 640, 480, 0, 0);
 
-  if (window == nullptr || renderer == nullptr)
+  if (window == nullptr || renderer == nullptr) {
+    fmt::print(fg(fmt::color::crimson) | fmt::emphasis::bold, 
+        "There has been an error creating a Window or Renderer:\n");
+    fmt::print(fg(fmt::color::crimson) | fmt::emphasis::bold, 
+        "{}\n", SDL_GetError());
     return -1;
+  }
 
   SDL_SetRenderDrawColor(renderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
   SDL_Event event;
