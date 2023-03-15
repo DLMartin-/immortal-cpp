@@ -1,7 +1,9 @@
-#include <SDL.h>
 #include <string_view>
+
 #include <fmt/core.h>
 #include <fmt/color.h>
+
+#include <SDL3/SDL.h>
 
 struct SdlWindowContext {
   SDL_Window* window;
@@ -12,7 +14,6 @@ struct SdlWindowContext {
     SDL_DestroyWindow(window);
   }
 };
-
 
 [[nodiscard]] SdlWindowContext create_window_context(std::string_view title, int w,
                                             int h, int window_flags,

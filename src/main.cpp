@@ -1,7 +1,10 @@
-#include <SDL3/SDL.h>
 #include <cstdlib>
+
 #include <fmt/core.h>
 #include <fmt/color.h>
+
+#include <SDL3/SDL.h>
+
 #include "appmain.h"
 
 int main(int const argc, char const *const argv[]) {
