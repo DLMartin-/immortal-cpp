@@ -6,6 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 
-add_executable(immortal src/main.cpp)
+add_executable(immortal src/main.cpp src/appmain.h src/appmain.cpp)
 target_link_libraries(immortal PRIVATE SDL3::SDL3)
 
