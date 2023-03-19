@@ -7,6 +7,8 @@
 
 #include <SDL3/SDL.h>
 
+#include "screenmanager.h"
+
 struct SdlWindowContext {
   SDL_Window *window;
   SDL_Renderer *renderer;
@@ -16,52 +18,6 @@ struct SdlWindowContext {
     SDL_DestroyWindow(window);
   }
 };
-
-struct TitleScreen {};
-void display(TitleScreen &screen);
-void update_tic(TitleScreen &screen);
-void handle_event(TitleScreen &screen, SDL_Event const &event);
-
-struct OverworldScreen {};
-void display(OverworldScreen &screen);
-void update_tic(OverworldScreen &screen);
-void handle_event(OverworldScreen &screen, SDL_Event const &event);
-
-using GameScreen = std::variant<TitleScreen*, OverworldScreen*>;
-using GameScreens = std::tuple<TitleScreen, OverworldScreen>;
-
-GameScreens screen_states{};
-GameScreen current_screen = &std::get<TitleScreen>(screen_states);
-
-void display(TitleScreen &screen) {
-  fmt::print(fg(fmt::color::indigo), "TitleScreen::display()\n");
-}
-void update_tic(TitleScreen &screen) {
-  fmt::print(fg(fmt::color::indigo), "TitleScreen::update_tic()\n");
-}
-void handle_event(TitleScreen &screen, SDL_Event const &event) {
-  fmt::print(fg(fmt::color::indigo), "TitleScreen::handle_event()\n");
-  if(event.type == SDL_EVENT_KEY_DOWN) {
-    if(event.key.keysym.scancode == SDL_SCANCODE_A) {
-      current_screen = &std::get<OverworldScreen>(screen_states);
-    }
-  }
-}
-
-void display(OverworldScreen &screen) {
-  fmt::print(fg(fmt::color::lime), "OverworldScreen::display()\n");
-}
-void update_tic(OverworldScreen &screen) {
-  fmt::print(fg(fmt::color::lime), "OverworldScreen::process_tic()\n");
-}
-void handle_event(OverworldScreen &screen, SDL_Event const &event) {
-  fmt::print(fg(fmt::color::lime), "OverworldScreen::handle_event()\n");
-  if(event.type == SDL_EVENT_KEY_DOWN) {
-    if(event.key.keysym.scancode == SDL_SCANCODE_S) {
-      current_screen = &std::get<TitleScreen>(screen_states);
-    }
-  }
-}
 
 [[nodiscard]] SdlWindowContext
 create_window_context(std::string_view title, int w, int h, int window_flags,
@@ -84,18 +40,22 @@ create_window_context(std::string_view title, int w, int h, int window_flags,
     return -1;
   }
 
+  ScreenManager screen_manager;
+  auto current_screen = screen_manager.current_screen();
   SDL_SetRenderDrawColor(renderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
   SDL_Event event{};
   while (1) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_EVENT_QUIT)
         return 0;
-      std::visit([&event](auto &&screen) { handle_event(*screen, event); },
-                 current_screen);
+      std::visit([&event](auto &&screen) { 
+          fmt::print("Handling Event!\n");
+          handle_event(*screen, event); },
+                 *current_screen);
     }
 
-    std::visit([](auto &&screen) { update_tic(*screen); }, current_screen);
-    std::visit([](auto &&screen) { display(*screen); }, current_screen);
+    std::visit([](auto &&screen) { update_tic(*screen); }, *current_screen);
+    std::visit([](auto &&screen) { display(*screen); }, *current_screen);
 
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
